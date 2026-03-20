@@ -31,7 +31,7 @@ def print_welcome_message():
     print(banner)
     print()
     print(frame_top)
-    print(f"{ORANGE}│{RESET} {BOLD}Welcome to Django Girls Offline!{RESET}")
+    print(f"{ORANGE}│{RESET} {BOLD}Welcome to Django Girls Offline!{RESET}                                {ORANGE}│{RESET}")
     print(f"{ORANGE}│{RESET}                                                                 {ORANGE}│{RESET}")
     print(f"{ORANGE}│{RESET} Start your web development journey with Django!                 {ORANGE}│{RESET}")
     print(f"{ORANGE}│{RESET} Type 'hello' to get started with your Django Girls Assistant.   {ORANGE}│{RESET}")
