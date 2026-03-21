@@ -12,12 +12,33 @@ logging.getLogger("fastmcp").setLevel(logging.WARNING)
 
 mcp = FastMCP("Django Girls Tutorial")
 
+
+def run_shell_command(command: str) -> dict:
+    """Run a shell command and return success status and output."""
+    import subprocess
+    try:
+        result = subprocess.run(
+            command, shell=True, capture_output=True, text=True, timeout=30
+        )
+        return {
+            "success": result.returncode == 0,
+            "output": result.stdout or result.stderr,
+        }
+    except Exception as exc:
+        return {"success": False, "output": str(exc)}
+
+
 # --------------------------------------------------------------------------------------
 # WELCOME AND INTRODUCTION
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="welcome_tutorial",   
-description="Always call this first when user says hello, hi, or starts the tutorial. Use when user wants to begin.")
+@mcp.tool(
+    name="welcome_tutorial",
+    description=(
+        "Always call this first when user says hello, hi, or starts the "
+        "tutorial. Use when user wants to begin."
+    ),
+)
 def welcome_tutorial() -> str:
     """Welcome message that mirrors Django Girls tutorial enthusiasm and approach."""
     return """
@@ -44,14 +65,16 @@ A personal blog! By the end, you'll have your very own blog running on your comp
 • If you're completely new to programming, type in **"learn Python"** to start with Python basics.
 • If you're ready to jump into Django setup, say **"setup"** to get started right away with setting up Django.
 
-Let's create something amazing together! 
+Let's create something amazing together!
 """
 
 # --------------------------------------------------------------------------------------
 # PYTHON BASICS - Enhanced for complete beginners
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="python_introduction",   
+
+@mcp.tool(
+    name="python_introduction",
     description="Call this when user says 'Let's learn Python', 'python basics', 'I'm new to programming', or 'start with python'.")
 def python_introduction() -> str:
     """Interactive Python introduction following Django Girls methodology."""
@@ -62,7 +85,7 @@ Programming might seem scary, but it's really just giving instructions to your c
 
 **First, in Python we write and 'run' code in a code interpreter. To test out writing your first lines of code we'll start by opening a new terminal.**
 
-- In VS Code we will do this by clicking the split terminal button (looks like two rectangles joined) in the top right of your current terminal. 
+- In VS Code we will do this by clicking the split terminal button (looks like two rectangles joined) in the top right of your current terminal.
 - `(TIP: Ask the assitant to explain what a terminal is if you're not sure!)`
 - In the new terminal type **python3**. This will open a **code interpreter**.
 
@@ -72,7 +95,7 @@ Programming might seem scary, but it's really just giving instructions to your c
 Try typing these into the interpreter one at a time(press Enter after each):
 ```python
 >>> 2 + 3
->>> 4 * 5  
+>>> 4 * 5
 >>> 10 / 2
 >>> 2 ** 3  # This means 2 to the power of 3
 ```
@@ -130,11 +153,13 @@ This tells Python: "For each friend in my friends list, print hello to them."
 **Need help?** Ask me anything like "What's a variable?" or "How do loops work?"
 """
 
-@mcp.tool(name="explain_programming_concept",   
+
+@mcp.tool(
+    name="explain_programming_concept",
     description="Call this when user asks about specific programming concepts like 'what is a variable', 'explain functions', 'what are loops', etc.")
 def explain_programming_concept(concept: str) -> str:
     """Explain programming concepts in beginner-friendly terms."""
-    
+
     explanations = {
         "variable": """
 **Variables - Your Computer's Memory Boxes 📦**
@@ -155,7 +180,7 @@ Sarah
 
 Think of it like this: instead of saying "the person whose name starts with S and ends with h and is 5 letters long" every time, you just say "name"!
 """,
-        
+
         "function": """
 **Functions - Your Code Recipes 👩‍🍳**
 
@@ -182,7 +207,7 @@ Welcome to our website!
 
 It's like having a bread recipe - you don't rewrite the recipe every time you want bread!
 """,
-        
+
         "loop": """
 **Loops - Making Your Computer Do Repetitive Work 🔄**
 
@@ -202,18 +227,18 @@ Happy birthday David!
 **Without a loop, you'd have to write:**
 ```python
 >>> print("Happy birthday Anna!")
->>> print("Happy birthday Ben!")  
+>>> print("Happy birthday Ben!")
 >>> print("Happy birthday Cara!")
 >>> print("Happy birthday David!")
 ```
 
 **Two main types:**
-- **for loop**: "Do this for each item in my list"  
+- **for loop**: "Do this for each item in my list"
 - **while loop**: "Keep doing this while something is true"
 
 Loops are why programmers are lazy in a good way - we make the computer do the boring repetitive stuff!
 """,
-        
+
         "list": """
 **Lists - Your Digital Shopping Lists 📋**
 
@@ -240,7 +265,7 @@ cookies
 
 Lists are perfect when you have multiple related things - like a list of friends, a list of blog posts, or a list of favorite movies!
 """,
-        
+
         "string": """
 **Strings - Text That Computers Understand 📝**
 
@@ -256,7 +281,7 @@ A string is just text - letters, numbers, spaces, and symbols all treated as tex
 **String magic:**
 ```python
 >>> greeting = "Hello"
->>> name = "Alice" 
+>>> name = "Alice"
 >>> full_greeting = greeting + " " + name + "!"  # Joining strings
 >>> print(full_greeting)
 Hello Alice!
@@ -292,7 +317,7 @@ NameError: name 'nme' is not defined
 **TypeError** - "You're asking me to do something impossible"
 ```python
 >>> "hello" + 5
-TypeError: can only concatenate str (not "int") to str  
+TypeError: can only concatenate str (not "int") to str
 # Fix: "hello" + str(5) or "hello" + "5"
 ```
 
@@ -306,17 +331,17 @@ SyntaxError: invalid syntax
 **Remember:** Every programmer sees errors all day long. They're not failures - they're learning opportunities!
 """
     }
-    
+
     concept_lower = concept.lower()
     for key, explanation in explanations.items():
         if key in concept_lower:
             return explanation
-    
-    return f"""
+
+    return """
 I'd love to help explain that concept! Here are the programming concepts I can explain in simple terms:
 
 • **variable** - storing information in labeled boxes
-• **function** - reusable code recipes  
+• **function** - reusable code recipes
 • **loop** - making the computer repeat tasks
 • **list** - holding multiple items in order
 • **string** - text that computers understand
@@ -326,10 +351,12 @@ Just ask me something like "explain variables" or "what are functions?"
 """
 
 # --------------------------------------------------------------------------------------
-# SETUP AND ENVIRONMENT 
+# SETUP AND ENVIRONMENT
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="setup_environment",   
+
+@mcp.tool(
+    name="setup_environment",
     description="Call this when user says 'I'm ready for Django setup', 'let's setup', 'environment setup', or after python_introduction is complete.")
 def setup_environment() -> str:
     """Guide through environment setup with clear explanations."""
@@ -385,18 +412,20 @@ python -m pip install --upgrade pip
 **Stuck on something?** Just ask! Common issues: "python3 not found", "permission denied", or "virtual environment not activating"
 """
 
-@mcp.tool(name="verify_environment",   
+
+@mcp.tool(
+    name="verify_environment",
     description="Call this when user says 'environment is ready', 'check my setup', or after setup_environment steps are completed.")
 def verify_environment() -> str:
     """Verify the environment setup is working correctly."""
-    
+
     checks = {
         "python_installed": False,
         "python_version": None,
         "virtual_env_active": False,
         "pip_available": False
     }
-    
+
     # Check Python
     result = run_shell_command("python3 --version")
     if result["success"]:
@@ -408,46 +437,48 @@ def verify_environment() -> str:
         if result["success"]:
             checks["python_installed"] = True
             checks["python_version"] = result["output"].strip()
-    
+
     # Check if in virtual environment
     checks["virtual_env_active"] = os.environ.get("VIRTUAL_ENV") is not None
-    
+
     # Check pip
     pip_result = run_shell_command("pip --version")
     checks["pip_available"] = pip_result["success"]
-    
+
     status_report = "🔍 **Environment Check Results:**\n\n"
-    
+
     if checks["python_installed"]:
         status_report += f"✅ Python is installed: {checks['python_version']}\n"
     else:
         status_report += "❌ Python not found. Please install Python from python.org\n"
-    
+
     if checks["virtual_env_active"]:
         status_report += "✅ Virtual environment is active - great job!\n"
     else:
         status_report += "⚠️  Virtual environment not active. Run the activation command again:\n"
         status_report += "   Mac/Linux: `source blog_env/bin/activate`\n"
         status_report += "   Windows: `blog_env\\Scripts\\activate`\n"
-    
+
     if checks["pip_available"]:
         status_report += "✅ Pip is available for installing packages\n"
     else:
         status_report += "❌ Pip not found. This usually fixes itself when virtual environment is active.\n"
-    
+
     if checks["python_installed"] and checks["virtual_env_active"] and checks["pip_available"]:
         status_report += "\n🎉 **Everything looks great! Ready to install Django!**\n"
         status_report += "\nSay **'install Django'** to continue!"
     else:
         status_report += "\n🔧 Please fix the issues above before continuing. Need help? Just ask!"
-    
+
     return status_report
 
 # --------------------------------------------------------------------------------------
 # DJANGO INSTALLATION AND PROJECT CREATION
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="install_django",   
+
+@mcp.tool(
+    name="install_django",
     description="Call this when user says 'install Django', 'ready for Django', or after verify_environment shows success.")
 def install_django() -> str:
     """Guide through Django installation."""
@@ -485,7 +516,9 @@ You should see something like "5.0.1" or similar. This is Django's version numbe
 - Takes forever → This is normal for the first Django install!
 """
 
-@mcp.tool(name="create_django_project",   
+
+@mcp.tool(
+    name="create_django_project",
     description="Call this when user says 'create Django project', 'start project', or after install_django is complete.")
 def create_django_project() -> str:
     """Guide through creating the Django project."""
@@ -510,7 +543,7 @@ You should see:
 - `manage.py` - Your project's command center (like a remote control)
 - `mysite/` folder with:
   - `settings.py` - Your project's configuration file
-  - `urls.py` - Your website's navigation map  
+  - `urls.py` - Your website's navigation map
   - `wsgi.py` - Helps your site talk to web servers
 
 **Test that it works:**
@@ -529,7 +562,7 @@ You should see a "Congratulations!" page with a rocket! 🚀
 **🤔 What's happening here?**
 - `manage.py` is your project manager - it can start servers, create database tables, and more
 - `runserver` starts a mini web server on your computer
-- `127.0.0.1:8000` means "your own computer, port 8000" 
+- `127.0.0.1:8000` means "your own computer, port 8000"
 
 **Ready for the next step?** Say **"create blog app"** and we'll start building your actual blog!
 """
@@ -538,7 +571,9 @@ You should see a "Congratulations!" page with a rocket! 🚀
 # BLOG APPLICATION CREATION
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="create_blog_app",   
+
+@mcp.tool(
+    name="create_blog_app",
     description="Call this when user says 'create blog app', 'add blog', or after create_django_project is complete.")
 def create_blog_app() -> str:
     """Guide through creating the blog application."""
@@ -607,7 +642,9 @@ This tells Django "Hey, I have a new app called 'blog' that you need to know abo
 # DATABASE MODELS
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="create_post_model",   
+
+@mcp.tool(
+    name="create_post_model",
     description="Call this when user says 'create post model', 'define blog post', or after create_blog_app is complete.")
 def create_post_model() -> str:
     """Guide through creating the Post model."""
@@ -675,7 +712,9 @@ This actually creates the table in your database!
 # ADMIN INTERFACE
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="setup_admin",   
+
+@mcp.tool(
+    name="setup_admin",
     description="Call this when user says 'setup admin', 'admin panel', or after create_post_model is complete.")
 def setup_admin() -> str:
     """Guide through setting up Django admin."""
@@ -707,7 +746,7 @@ python manage.py createsuperuser
 
 You'll be asked for:
 - **Username**: Choose anything (like "admin" or your name)
-- **Email**: Can be fake for learning (like "me@example.com")  
+- **Email**: Can be fake for learning (like "me@example.com")
 - **Password**: Choose something secure (you won't see the letters as you type - that's normal!)
 - **Password (again)**: Type the same password
 
@@ -744,7 +783,9 @@ Open your browser and go to: `http://127.0.0.1:8000/admin/`
 # VIEWS AND TEMPLATES
 # --------------------------------------------------------------------------------------
 
-@mcp.tool(name="create_blog_views",   
+
+@mcp.tool(
+    name="create_blog_views",
     description="Call this when user says 'create blog views', 'show posts', or after setup_admin is complete.")
 def create_blog_views() -> str:
     """Guide through creating views and templates."""
@@ -772,7 +813,7 @@ def post_list(request):
 
 **What this code does:**
 - Gets all published posts from the database
-- Puts them in chronological order  
+- Puts them in chronological order
 - Sends them to a template called 'post_list.html'
 
 **💾 Save the file!**
@@ -868,7 +909,9 @@ urlpatterns = [
 **Ready for the next step?** Say **"test my blog"** and we'll see your blog in action!
 """
 
-@mcp.tool(name="test_blog",   
+
+@mcp.tool(
+    name="test_blog",
     description="Call this when user says 'test my blog', 'run server', 'see my blog', or after create_blog_views is complete.")
 def test_blog() -> str:
     """Guide through testing the complete blog."""
@@ -893,7 +936,7 @@ Open your browser and go to: `http://127.0.0.1:8000`
 You've just built a complete Django blog from scratch! Here's what you accomplished:
 
 ✅ **Learned Python basics** - Variables, functions, loops
-✅ **Set up your development environment** - Virtual environment, Django installation  
+✅ **Set up your development environment** - Virtual environment, Django installation
 ✅ **Created a Django project** - Your website's foundation
 ✅ **Built a blog app** - A specific feature of your site
 ✅ **Designed database models** - How your data is structured
@@ -910,11 +953,11 @@ You've just built a complete Django blog from scratch! Here's what you accomplis
 **Want to keep learning?** Django has tons more features:
 - User authentication (login/logout)
 - Image uploads
-- Search functionality  
+- Search functionality
 - RSS feeds
 - And much more!
 
-**🏆 You're officially a Django developer!** 
+**🏆 You're officially a Django developer!**
 
 **Need help with anything?** Ask me about:
 - "How do I customize the design?"
@@ -922,6 +965,7 @@ You've just built a complete Django blog from scratch! Here's what you accomplis
 - "What should I learn next?"
 - "How do I put this online?"
 """
+
 
 if __name__ == "__main__":
     mcp.run()
