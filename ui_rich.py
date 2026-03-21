@@ -23,14 +23,12 @@ Notes:
 from __future__ import annotations
 
 import asyncio
-import os
 from dataclasses import dataclass
 from typing import Optional
 
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
-from rich.text import Text
 from rich.prompt import Prompt
 
 # Create console that adapts to current terminal size
@@ -59,8 +57,7 @@ class RichChatUI:
             # Force Rich to re-detect terminal size
             console._width = None
             console._height = None
-            # This will cause Rich to re-detect size on next access
-        except:
+        except (AttributeError, TypeError):
             pass  # Fallback gracefully if this internal API changes
 
     def _get_panel_width(self) -> Optional[int]:
@@ -68,26 +65,22 @@ class RichChatUI:
         try:
             # Refresh console size information
             self._refresh_console_size()
-            
+
             # Get current terminal size
             terminal_width = console.size.width
-            
-            # For very narrow terminals (less than 40 chars), use full width
-            if terminal_width <= 40:
+
+            # For narrow terminals (up to 60 chars), use full width
+            if terminal_width <= 60:
                 return None  # Use full available width
-            
-            # For narrow terminals (split view), use full width with minimal padding
-            elif terminal_width <= 60:
-                return None  # Use full available width
-            
+
             # For medium terminals, use 90% of width to maximize space usage
             elif terminal_width <= 100:
                 return max(40, int(terminal_width * 0.9))
-            
+
             # For wide terminals, cap at reasonable width for readability
             else:
-                return 90
-                
+                return min(90, terminal_width)
+
         except (AttributeError, OSError):
             # Fallback if we can't determine terminal size
             return None  # Use full width as safest fallback
@@ -96,7 +89,7 @@ class RichChatUI:
         if self._running:
             return
         self._running = True
-        
+
         # Clear screen and show a compact header
         console.clear()
         console.print("")
@@ -107,27 +100,32 @@ class RichChatUI:
             # Refresh console size and get terminal width for prompt formatting
             self._refresh_console_size()
             terminal_width = console.size.width
-            
+
             if terminal_width <= 30:
-                # Ultra-compact prompt for very narrow terminals
                 text = Prompt.ask("[bold purple]>[/]")
             elif terminal_width <= 50:
-                # Compact prompt for narrow terminals
                 text = Prompt.ask("[bold purple]You>[/]")
             else:
-                # Full prompt for wider terminals
                 text = Prompt.ask("[bold purple]You[/]")
             return text if text else ""
         except (EOFError, KeyboardInterrupt):
+            raise  # Let the caller handle graceful shutdown
+        except Exception:
             return ""
 
     async def add_agent_markdown(self, md: str) -> None:
+        if not md:
+            return
         # Responsive panel design based on current terminal width
-        width = self._get_panel_width()
-        terminal_width = console.size.width
-        
+        try:
+            width = self._get_panel_width()
+            terminal_width = console.size.width
+        except (AttributeError, OSError):
+            terminal_width = 80
+            width = None
+
         console.print()
-        
+
         # Ultra-narrow terminals (less than 30 chars) - minimal UI
         if terminal_width <= 30:
             console.print(Panel(
@@ -174,18 +172,24 @@ class RichChatUI:
             ))
 
     async def add_system_markdown(self, md: str) -> None:
+        if not md:
+            return
         # Responsive panel design based on current terminal width
-        width = self._get_panel_width()
-        terminal_width = console.size.width
-        
+        try:
+            width = self._get_panel_width()
+            terminal_width = console.size.width
+        except (AttributeError, OSError):
+            terminal_width = 80
+            width = None
+
         console.print()
-        
+
         # Ultra-narrow terminals (less than 30 chars) - minimal UI
         if terminal_width <= 30:
             console.print(Panel(
                 Markdown(md),
                 title="ℹ️",
-                title_align="left", 
+                title_align="left",
                 border_style="blue",
                 padding=(0, 0),
                 width=width,
@@ -196,7 +200,7 @@ class RichChatUI:
             console.print(Panel(
                 Markdown(md),
                 title="ℹ️",
-                title_align="left", 
+                title_align="left",
                 border_style="blue",
                 padding=(0, 1),
                 width=width,
@@ -207,7 +211,7 @@ class RichChatUI:
             console.print(Panel(
                 Markdown(md),
                 title="ℹ️ Sys",
-                title_align="left", 
+                title_align="left",
                 border_style="blue",
                 padding=(0, 1),
                 width=width,
@@ -218,7 +222,7 @@ class RichChatUI:
             console.print(Panel(
                 Markdown(md),
                 title="ℹ️ System",
-                title_align="left", 
+                title_align="left",
                 border_style="blue",
                 padding=(1, 2),
                 width=width,
